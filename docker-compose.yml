@@ -1,0 +1,49 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+
+  worker_ingest:
+    build: .
+    command: ["python", "-m", "demo.worker_ingest"]
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      SHIELD_MODE: ${SHIELD_MODE:-protected}
+      # Role- and capability-scoped key: worker_ingest ONLY holds LOW + ticket capabilities
+      ASYNC_SHIELD_KEYS_JSON: '[{"kid":"ingest-v1","secret":"demo-ingest-key-replace-in-prod-01","max_integrity":"low","allowed_capabilities":["ticket:reply","ticket:tag"],"role":"ingest"}]'
+      ASYNC_SHIELD_SIGNING_KID: ingest-v1
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  worker_planner:
+    build: .
+    command: ["python", "-m", "demo.worker_planner"]
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      SHIELD_MODE: ${SHIELD_MODE:-protected}
+      # Verifies ingest-v1, re-seals derived payloads with planner-v1 (LOW + ticket capabilities only)
+      ASYNC_SHIELD_KEYS_JSON: '[{"kid":"ingest-v1","secret":"demo-ingest-key-replace-in-prod-01","max_integrity":"low","allowed_capabilities":["ticket:reply","ticket:tag"],"role":"ingest","active_for_signing":false},{"kid":"planner-v1","secret":"demo-planner-key-replace-in-prod-02","max_integrity":"low","allowed_capabilities":["ticket:reply","ticket:tag"],"role":"planner"}]'
+      ASYNC_SHIELD_SIGNING_KID: planner-v1
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  worker_executor:
+    build: .
+    command: ["python", "-m", "demo.worker_executor"]
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      SHIELD_MODE: ${SHIELD_MODE:-protected}
+      # Verifier keyring: validates kid integrity & capability allowlists across all issuer roles
+      ASYNC_SHIELD_KEYS_JSON: '[{"kid":"ingest-v1","secret":"demo-ingest-key-replace-in-prod-01","max_integrity":"low","allowed_capabilities":["ticket:reply","ticket:tag"],"role":"ingest"},{"kid":"planner-v1","secret":"demo-planner-key-replace-in-prod-02","max_integrity":"low","allowed_capabilities":["ticket:reply","ticket:tag"],"role":"planner"},{"kid":"admin-v1","secret":"demo-admin-key-replace-in-prod-03","max_integrity":"high","allowed_capabilities":["db:write_role","api:payout","ticket:reply"],"role":"admin_sso"}]'
+    depends_on:
+      redis:
+        condition: service_healthy

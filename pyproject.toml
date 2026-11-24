@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "async-shield"
+version = "0.3.0"
+description = "An integrity layer for Redis Streams multi-agent pipelines: role- and capability-scoped HMAC envelopes, audience binding, and at-most-once replay protection."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+dependencies = [
+    "redis>=5.0.0,<6.0.0",
+    "pydantic>=2.6.0,<3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "hypothesis>=6.100.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["shield*", "demo*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v"

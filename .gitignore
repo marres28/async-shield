@@ -1,0 +1,23 @@
+# Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.hypothesis/
+
+# Ambienti virtuali
+.venv/
+venv/
+env/
+
+# Docker & Logs
+*.log
+.env
+.env.*
+!.env.example
+
+# Coverage / Tooling
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
