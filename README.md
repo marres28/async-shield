@@ -1,8 +1,7 @@
 # Async-Shield
 
-<!-- Uncomment once pushed to GitHub:
-[![CI](https://github.com/<owner>/<repo>/actions/workflows/ci.yml/badge.svg)](https://github.com/<owner>/<repo>/actions/workflows/ci.yml)
--->
+[![CI](https://github.com/marres28/async-shield/actions/workflows/ci.yml/badge.svg)](https://github.com/marres28/async-shield/actions/workflows/ci.yml)
+
 ![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
 ![Pydantic v2](https://img.shields.io/badge/Pydantic-v2-E92063?logo=pydantic&logoColor=white)
 ![Redis 7](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)
